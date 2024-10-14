@@ -120,6 +120,14 @@ Include the relevant imports as you go.
 
 ```python
 # Your code here
+
+from sklearn.model_selection import train_test_split
+
+X = df.drop("Cover_Type", axis=1)
+y = df["Cover_Type"]
+
+
+X_train, X_test, y_train, y_test = train_test_split(X, y,random_state=42, stratify=y )
 ```
 
 Now, instantiate a `StandardScaler`, fit it on `X_train`, and create new variables `X_train_scaled` and `X_test_scaled` containing values transformed with the scaler.
@@ -127,6 +135,13 @@ Now, instantiate a `StandardScaler`, fit it on `X_train`, and create new variabl
 
 ```python
 # Your code here
+
+from sklearn.preprocessing import StandardScaler
+
+scaler = StandardScaler()
+
+X_train_scaled = scaler.fit_transform(X_train)
+X_test_scaled = scaler.transform(X_test)
 ```
 
 The following code checks that everything is set up correctly:
@@ -165,13 +180,18 @@ Your code might take a minute or more to run.
 # Replace None with appropriate code
 
 # Relevant imports
-None
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.model_selection import cross_val_score
+import numpy as np
+
 
 # Creating the model
-knn_baseline_model = None
+knn_baseline_model = KNeighborsClassifier()
 
 # Perform cross-validation
-knn_baseline_log_loss = None
+knn_baseline_log_loss = cross_val_score(knn_baseline_model , X_train_scaled, y_train, scoring="neg_log_loss")
+
+knn_baseline_log_loss = -np.mean(neg_log_loss_scores)
 
 knn_baseline_log_loss
 ```
@@ -184,7 +204,8 @@ Is this model better? Compare it in terms of metrics and speed.
 ```python
 # Replace None with appropriate text
 """
-None
+Yes the model is better, is has a better log loss. 
+
 """
 ```
 
@@ -193,18 +214,55 @@ None
 Build and evaluate at least two more kNN models to find the best one. Explain why you are changing the hyperparameters you are changing as you go. These models will be *slow* to run, so be thinking about what you might try next as you run them.
 
 
+#### In the model below, we will increase the neighbors hyperparameter, this will smooth the decision boundaries which may help reduce variance and improve generalization on the test data.
+
+
 ```python
 # Your code here (add more cells as needed)
+
+# Model 1: Increase n_neighbors to 10
+knn_model_1 = KNeighborsClassifier(n_neighbors=10)
+
+# Perform cross-validation with the new model
+neg_log_loss_scores_1 = cross_val_score(knn_model_1, X_train_scaled, y_train, scoring="neg_log_loss", cv=5)
+
+# Calculate the log loss for model 1
+knn_model_1_log_loss = -np.mean(neg_log_loss_scores_1)
+
+knn_model_1_log_loss
 ```
 
+##### In the model below, we will change the weights to 'distance'.. this allows closer neighbors to have influence than further ones. This might improve performance in cases where nearby points are more reliable for predictions. 
+
 
 ```python
 # Your code here (add more cells as needed)
+# Model 2: Change the weights to 'distance' with n_neighbors=10
+knn_model_2 = KNeighborsClassifier(n_neighbors=10, weights='distance')
+
+# Performs cross validation with the new model. 
+neg_log_loss_scores_2 = cross_val_score(knn_model_2, X_train_scaled,y_train,scoring="neg_log_loss", cv=5)
+
+# Calculates the log loss for model 2
+knn_model_2_log_loss = -np.mean(neg_log_loss_scores_2)
+
+knn_model_2_log_loss
 ```
-
+##### In the model below, we will change the distance metric hyperparameter. The default distance hyperparameter is Minkowski distance(p=2) which corresponds to Euclidean distance. We will switch it to p=1.
 
 ```python
 # Your code here (add more cells as needed)
+# Model 3: Change distance metric to Manhattan (p=1)
+knn_model_3 = KNeighborsClassifier(n_neighbors=10, weights='distance', p=1)
+
+# Perform cross-validation with the new model
+neg_log_loss_scores_3 = cross_val_score(knn_model_3, X_train_scaled, y_train, scoring="neg_log_loss", cv=5)
+
+# Calculate the log loss for model 3
+knn_model_3_log_loss = -np.mean(neg_log_loss_scores_3)
+
+knn_model_3_log_loss
+
 ```
 
 ## 4. Build a Baseline Decision Tree Model
@@ -216,6 +274,19 @@ Now that you have chosen your best kNN model, start investigating decision tree 
 
 ```python
 # Your code here
+from sklearn.tree import DecisionTreeClassifier
+
+
+# Initialize baseline Decision Tree Model with random state of 42
+baseline_decision_tree = DecisionTreeClassifier(random_state=42)
+
+# Perform cross validation 
+neg_log_loss_scores_dt = cross_val_score(baseline_decision_tree, X_train_scaled, y_train, scoring="neg_log_loss", cv=5)
+
+# Calculate the average log loss (convert negative log loss to positive)
+baseline_decision_tree_log_loss = -np.mean(neg_log_loss_scores_dt)
+
+baseline_decision_tree_log_loss
 ```
 
 Interpret this score. How does this compare to the log loss from our best logistic regression and best kNN models? Any guesses about why?
@@ -224,7 +295,10 @@ Interpret this score. How does this compare to the log loss from our best logist
 ```python
 # Replace None with appropriate text
 """
-None
+It performs better than our best logistic regression model and our best knn models but it is 
+most likely overfitting(it has learnt the training data very well and is unable
+to generalize) this is most likely because decision trees are prone to overfitting.
+
 """
 ```
 
@@ -233,19 +307,68 @@ None
 Build and evaluate at least two more decision tree models to find the best one. Explain why you are changing the hyperparameters you are changing as you go.
 
 
-```python
-# Your code here (add more cells as needed)
-```
+##### In this first model , we will restrict the maximum tree depth this is because a deep decision tree is prone to overfitting. By limiting the depth of the tree with max_depth, we can prevent the model from learning overly complex patterns which improves generalization. 
 
 
 ```python
 # Your code here (add more cells as needed)
-```
+# Initialize the model (Limit the depth of the tree to 5)
+decision_tree_model_1 = DecisionTreeClassifier(max_depth=5, random_state=42)
 
+# perform cross-validation using log loss
+neg_log_loss_scores_dt_1 = cross_val_score(decision_tree_model_1, X_train_scaled, y_train, scoring="neg_log_loss", cv=5)
+
+# Calculate the log loss for the model 
+decision_tree_model_1_log_loss = -np.mean(neg_log_loss_scores_dt_1)
+
+decision_tree_model_1_log_loss
+```
+#### Outcome  : 0.12054652328854479
+
+##### In the model below , we will control the Minimum Samples per Split and Leaf..This prevents the tree from splitting nodes based on very small samples. Which can lead to high variance and overfitting.
 
 ```python
 # Your code here (add more cells as needed)
+# Initialize the model with changed hyperparameters
+decision_tree_model_2 = DecisionTreeClassifier(max_depth=5, 
+                                               min_samples_split=10, 
+                                               min_samples_leaf=5,
+                                                 random_state=42)
+
+
+# Perform cross-validation using log loss
+neg_log_loss_scores_dt_2 = cross_val_score(decision_tree_model_2, X_train_scaled, y_train, scoring="neg_log_loss", cv=5)
+
+
+# Calculate the log los for model 2
+decision_tree_model_2_log_loss = -np.mean(neg_log_loss_scores_dt_2)
+
+decision_tree_model_2_log_loss
 ```
+#### Outcome : 0.11733519649174132
+
+#### In the model below , we will further tune the Model Tree Depth and Minimum Samples, this is due to the fact that there was an improvement in the model 2 from model 1. Our aim is to get the right balance between bias and variance.
+
+```python
+# Your code here (add more cells as needed)
+
+# Initialize the decision tree model
+decision_tree_model_3 = DecisionTreeClassifier(max_depth=5,
+                                                min_samples_split=12,
+                                                  min_samples_leaf=10,
+                                                    random_state=42)
+
+# Perform cross-validation using log loss
+neg_log_loss_scores_dt_3 = cross_val_score(decision_tree_model_3, X_train_scaled, y_train, scoring="neg_log_loss", cv=5)
+
+# Calculate the log loss for model 3
+decision_tree_model_3_log_loss = -np.mean(neg_log_loss_scores_dt_3)
+
+decision_tree_model_3_log_loss
+```
+#### Outcome : 0.11638171592158686
+
+##### In the above final decision tree, we increased the min_samples_split and we got a better log loss score even if by only one unit compared to the previous model.
 
 ## 6. Choose and Evaluate an Overall Best Model
 
@@ -256,11 +379,11 @@ Instantiate a variable `final_model` using your best model with the best hyperpa
 
 ```python
 # Replace None with appropriate code
-final_model = None
+final_model = KNeighborsClassifier(n_neighbors=10, weights='distance')
 
 # Fit the model on the full training data
 # (scaled or unscaled depending on the model)
-None
+final_model.fit(X_train_scaled,y_train)
 ```
 
 Now, evaluate the log loss, accuracy, precision, and recall. This code is mostly filled in for you, but you need to replace `None` with either `X_test` or `X_test_scaled` depending on the model you chose.
@@ -268,10 +391,10 @@ Now, evaluate the log loss, accuracy, precision, and recall. This code is mostly
 
 ```python
 # Replace None with appropriate code
-from sklearn.metrics import accuracy_score, precision_score, recall_score
+from sklearn.metrics import accuracy_score, precision_score, recall_score,log_loss
 
-preds = final_model.predict(None)
-probs = final_model.predict_proba(None)
+preds = final_model.predict(X_test_scaled)
+probs = final_model.predict_proba(X_test_scaled)
 
 print("log loss: ", log_loss(y_test, probs))
 print("accuracy: ", accuracy_score(y_test, preds))
@@ -279,13 +402,23 @@ print("precision:", precision_score(y_test, preds))
 print("recall:   ", recall_score(y_test, preds))
 ```
 
+#### Output: 
+log loss:  0.08141386112087046
+accuracy:  0.9822356118844795
+precision: 0.910828025477707
+recall:    0.8326055312954876
+
 Interpret your model performance. How would it perform on different kinds of tasks? How much better is it than a "dummy" model that always chooses the majority class, or the logistic regression described at the start of the lab?
 
 
 ```python
 # Replace None with appropriate text
 """
-None
+Due to the fact that this model had class imbalance there is a high 
+probability that the model is choosing the majority class when making the 
+predictions. To fix this, I will apply resampling techniques, use class weights, or consider ensemble methods to better balance the classes and improve model 
+performance.
+
 """
 ```
 

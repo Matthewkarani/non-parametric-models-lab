@@ -195,6 +195,8 @@ knn_baseline_log_loss = -np.mean(neg_log_loss_scores)
 
 knn_baseline_log_loss
 ```
+#### Outcome: 0.12964546386734574
+
 
 Our best logistic regression model had a log loss of 0.13031294393913376
 
@@ -231,6 +233,7 @@ knn_model_1_log_loss = -np.mean(neg_log_loss_scores_1)
 
 knn_model_1_log_loss
 ```
+##### Outcome: 0.07502202520388171
 
 ##### In the model below, we will change the weights to 'distance'.. this allows closer neighbors to have influence than further ones. This might improve performance in cases where nearby points are more reliable for predictions. 
 
@@ -248,6 +251,9 @@ knn_model_2_log_loss = -np.mean(neg_log_loss_scores_2)
 
 knn_model_2_log_loss
 ```
+##### Outcome: 0.06982850921022257
+
+
 ##### In the model below, we will change the distance metric hyperparameter. The default distance hyperparameter is Minkowski distance(p=2) which corresponds to Euclidean distance. We will switch it to p=1.
 
 ```python
@@ -264,6 +270,7 @@ knn_model_3_log_loss = -np.mean(neg_log_loss_scores_3)
 knn_model_3_log_loss
 
 ```
+##### Outcome: 0.05886194676088591
 
 ## 4. Build a Baseline Decision Tree Model
 
@@ -289,14 +296,15 @@ baseline_decision_tree_log_loss = -np.mean(neg_log_loss_scores_dt)
 baseline_decision_tree_log_loss
 ```
 
+##### Outcome: 0.7364763809378052
+
 Interpret this score. How does this compare to the log loss from our best logistic regression and best kNN models? Any guesses about why?
 
 
 ```python
 # Replace None with appropriate text
 """
-It performs better than our best logistic regression model and our best knn models but it is 
-most likely overfitting(it has learnt the training data very well and is unable
+It performs better than our best logistic regression model and our best knn models but it is most likely overfitting(it has learnt the training data very well and is unable
 to generalize) this is most likely because decision trees are prone to overfitting.
 
 """
